@@ -15,7 +15,7 @@ imgH = 32  # Height of the input image
 nc = 1  # Number of input channels (grayscale)
 nclass = len(alphabet) + 1  # Number of output classes
 nh = 256  # Number of hidden units in the RNN
-
+restore = True
 model = CRNN(32, 1, nclass, nh)
 criterion = CustomCTCLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -26,10 +26,11 @@ num_epochs = 50
 
 
 # Step 5: Training loop
-def train(model, data_loader, test_data_loader, criterion, optimizer, num_epochs, best_word_acc):
+def train(model, dataloader,test_data_loader, criterion, optimizer, num_epochs, start_epoch, best_word_acc):
     model.train()
-    for epoch in range(num_epochs):
-        for images, labels in data_loader:
+    last_epoch = start_epoch + num_epochs
+    for epoch in range(start_epoch, last_epoch):
+        for images, labels in dataloader:
             images = images.to(device)
             targets, lengths = convert_labels_to_sequences(labels)
 
@@ -57,14 +58,27 @@ def train(model, data_loader, test_data_loader, criterion, optimizer, num_epochs
                 true_texts.extend(labels)
 
         char_acc, word_acc = calculate_accuracy(decoded_texts, true_texts)
-        print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {loss.item()}, Char Acc: {char_acc}, Word Acc: {word_acc}')
+        print(f'Epoch {epoch+1}/{start_epoch + num_epochs}, Loss: {loss.item()}, Char Acc: {char_acc}, Word Acc: {word_acc}')
 
         # Save checkpoint if the current model has the best word accuracy
         if word_acc > best_word_acc:
             best_word_acc = word_acc
             save_checkpoint(model, optimizer, epoch, best_word_acc)
-
+        
         model.train()
 # Start training
-best_word_acc = 0
-train(model, data_loader, test_data_loader, criterion, optimizer, num_epochs, best_word_acc)
+
+
+def start_training_from_checkpoint(model,optimizer,num_epochs, checkpoint_path='checkpoint/best_checkpoint_medicine.pth'):
+    try:
+        start_epoch, best_word_acc = load_checkpoint(model,optimizer,checkpoint_path)
+        print(f"Resuming training from epoch {start_epoch+1} with best word accuracy {best_word_acc}")
+    except FileNotFoundError:
+        start_epoch, best_word_acc = 0, 0
+        print("Starting training from scratch")
+
+    train(model, data_loader, test_data_loader, criterion, optimizer, num_epochs,start_epoch, best_word_acc)
+if restore == True:
+    start_training_from_checkpoint(model,optimizer,num_epochs=50,checkpoint_path='checkpoint/best_checkpoint_medicine.pth')
+else:
+    train(model, data_loader, test_data_loader, criterion, optimizer, num_epochs, start_epoch=0, best_word_acc=0)

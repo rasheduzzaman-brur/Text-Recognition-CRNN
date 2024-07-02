@@ -60,3 +60,5 @@ def decode(output):
                 text.append(alphabet[char_index-1])
         decoded_texts.append("".join(text))
     return decoded_texts
+
+
