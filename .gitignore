@@ -1,0 +1,4 @@
+checkpoint/
+synthetic_dataset/
+testdata/
+*.ipynb
