@@ -10,15 +10,17 @@ from  loss import  CustomCTCLoss
 from model import CRNN
 from dataset import data_loader, test_data_loader
 from utils import convert_labels_to_sequences, decode , calculate_accuracy, save_checkpoint,load_checkpoint
-alphabet = """Only thewigsofrcvdampbkuq.$A-210xT5'MDL,RYHJ"ISPWENj&BC93VGFKz();#:!7U64Q8?+*ZX/%="""
+alphabet = """Only thewigsofrcvdampbkuq.$A-210xT5'MDL,RYHJ"ISPWENj&BC93VGF<Kz();#:!7U6>4|Q\8?+*Z{X/%=[]}"""
 imgH = 32  # Height of the input image
 nc = 1  # Number of input channels (grayscale)
 nclass = len(alphabet) + 1  # Number of output classes
 nh = 256  # Number of hidden units in the RNN
-restore = True
+restore = False
 model = CRNN(32, 1, nclass, nh)
 criterion = CustomCTCLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+# optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),lr=0.001)
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 num_epochs = 50
@@ -33,15 +35,19 @@ def train(model, dataloader,test_data_loader, criterion, optimizer, num_epochs, 
         for images, labels in dataloader:
             images = images.to(device)
             targets, lengths = convert_labels_to_sequences(labels)
+            
 
             optimizer.zero_grad()
             output = model(images)
             output = output.log_softmax(2)
 
+
             input_lengths = torch.full((output.size(1),), output.size(0), dtype=torch.long)
             target_lengths = torch.tensor(lengths, dtype=torch.long)
 
             loss = criterion(output, targets, input_lengths, target_lengths)
+            # loss = loss.mean()
+            # print(loss)
             loss.backward()
             optimizer.step()
 
@@ -78,6 +84,9 @@ def start_training_from_checkpoint(model,optimizer,num_epochs, checkpoint_path='
         print("Starting training from scratch")
 
     train(model, data_loader, test_data_loader, criterion, optimizer, num_epochs,start_epoch, best_word_acc)
+
+
+
 if restore == True:
     start_training_from_checkpoint(model,optimizer,num_epochs=50,checkpoint_path='checkpoint/best_checkpoint_medicine.pth')
 else:

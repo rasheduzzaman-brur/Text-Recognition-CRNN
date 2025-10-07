@@ -1,13 +1,17 @@
 import torch
-alphabet = """Only thewigsofrcvdampbkuq.$A-210xT5'MDL,RYHJ"ISPWENj&BC93VGFKz();#:!7U64Q8?+*ZX/%="""
+alphabet = """Only thewigsofrcvdampbkuq.$A-210xT5'MDL,RYHJ"ISPWENj&BC93VGF<Kz();#:!7U6>4|Q\8?+*Z{X/%=[]}"""
 # Create a mapping from characters to integers
 char_to_int = {char: i for i, char in enumerate(alphabet, 1)}  # Start indexing from 1
 
 def convert_labels_to_sequences(labels):
     sequences = []
     lengths = []
+    # print("-----------------------------------------------")
     for label in labels:
-        sequence = [char_to_int[char] for char in label]
+        # print(label)
+        # Remove both \r and \n from the label (or any other unwanted characters)
+        label_cleaned = label.replace('\r', '').replace('\n', '')
+        sequence = [char_to_int[char] for char in label_cleaned]
         sequences.extend(sequence)
         lengths.append(len(sequence))
     return torch.tensor(sequences, dtype=torch.long), lengths

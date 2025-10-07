@@ -25,8 +25,8 @@ class SyntheticDataset(Dataset):
 
 
 
-csv_file = '/home/rashed/office/medical_prescrip_v2/dftrain_medicine.csv'
-root_dir = '/home/rashed/office/medical_prescrip_v2/output_dir_6_csv_image'
+csv_file = '/home/rashed/own_project/PaddleOCR/dataset/train_output.csv'
+root_dir = '/home/rashed/own_project/PaddleOCR/dataset/train_ds'
 
 transform = transforms.Compose([
     transforms.Resize((32, 128)),
@@ -37,8 +37,8 @@ transform = transforms.Compose([
 dataset = SyntheticDataset(csv_file=csv_file, root_dir=root_dir, transform=transform)
 data_loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
 
-val_csv_file = '/home/rashed/office/medical_prescrip_v2/dftest_medicine.csv'
-val_root_dir = '/home/rashed/office/medical_prescrip_v2/output_dir_6_csv_image'
+val_csv_file = '/home/rashed/own_project/PaddleOCR/dataset/test_output.csv'
+val_root_dir = '/home/rashed/own_project/PaddleOCR/dataset/test_ds'
 
 transform = transforms.Compose([
     transforms.Resize((32, 128)),
